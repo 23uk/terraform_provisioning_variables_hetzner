@@ -7,6 +7,12 @@ resource "hcloud_ssh_key" "a23uk_key" {
   public_key = var.a23uk_key
 }
 
+resource "random_string" "passwd" {
+  count   = length(var.domains)
+  length  = 10
+  special = false
+}
+
 
 resource "hcloud_server" "devops_23uk" {
   count    = length(var.domains)
@@ -23,12 +29,8 @@ connection {
   } 
 
   provisioner "remote-exec" {
-    inline = [
-"echo root:${var.pass} | chpasswd"
-    ]
+    inline = ["/bin/echo \"${element(random_string.passwd[*].result, count.index)}\n${element(random_string.passwd[*].result, count.index)}\" | /usr/bin/passwd"]
   }
-
-
 }
 
 
